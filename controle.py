@@ -6,18 +6,18 @@
 
 # tive que alterar o tipo de duracao para VARCHAR pq quando, da tela de login (inicial), chamava a funcao_principal pelo botao, dava o erro "data truncated for column "duracao" at row 1
     # com o varchar  dá certo, mas nao vou mais conseguir usar a funcao SQL SUM p retornar o tempo total da playlist
-import mailbox
+
 from PyQt5 import uic, QtWidgets
 import mysql.connector
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A1, A4, A3, A2
  # variavel q recebe a conexao do código com o banco de dados MySQL
+
 banco = mysql.connector.connect(
     host='localhost',
     database='cadastro_produtos',
     user='root',
     passwd='')
-
 
 def excluirDados():
     
@@ -89,10 +89,7 @@ def cadastrar():
     print("email" + emailUsr)
     print("senha" + senhaUsr)
     print("senha2: " + senha2Usr)
-# condições 
-    # 1. se o nomeUsr ou o emailusr tiver cadastro no banco, nao fazer
-    # 2. sesenhaUsr == SenhaUsr2: cadastrar
-    # o campo do email tem q ter o @
+
     cursor3 = banco.cursor()
     cursor4= banco.cursor()
     cursor5= banco.cursor()
@@ -109,7 +106,6 @@ def cadastrar():
     cursor5.execute(querySql_emailValidar)
     qtdEmailValidado = cursor5.fetchall() 
    
-
     if cursor3.rowcount<1 and cursor4.rowcount<1:
         if cursor5.rowcount<1:
             cadastrarScreen.label_8.setText("Digite um e-mail válido")
@@ -126,60 +122,39 @@ def cadastrar():
         cadastrarScreen.label_8.setText("Nome de usuário ou e-mail já cadastrados")
 
 def logar():
-    # conferir se o email/nome de usr e a senha batem com a senha no banco de dados
-    # se sim -> entrar
     email = str(loginScreen.lineEdit.text().upper().replace(" ", ""))
     nomeUsr = str(loginScreen.lineEdit.text().upper().replace(" ", ""))
     senha =  str(loginScreen.lineEdit_2.text().upper().replace(" ", ""))
 
-    cursor= banco.cursor()
-    cursor2= banco.cursor()
-    cursor3= banco.cursor(buffered=True)
-     
+    cursor_email= banco.cursor()
+    cursor_nomeUsr= banco.cursor()
+    cursor_senha= banco.cursor(buffered=True)
 
-# email
     qSql_email = "SELECT * FROM cadastrousr where email = '{}'".format(email)
-    cursor.execute(qSql_email)
-    Qtdemail = cursor.fetchall()
-    cursor.close()
+    cursor_email.execute(qSql_email)
+    Qtdemail = cursor_email.fetchall()
+    cursor_email.close()
 
-# nome de usuario
     qSql_NomeUsr = "SELECT * FROM cadastrousr WHERE nomeUsr = '{}'".format(nomeUsr)
-    cursor2.execute(qSql_NomeUsr)
-    QtdNomeUsr = cursor2.fetchall()
-    cursor2.close()
-# senha
+    cursor_nomeUsr.execute(qSql_NomeUsr)
+    QtdNomeUsr = cursor_nomeUsr.fetchall()
+    
+    cursor_nomeUsr.close()
 
-    qSql_senha = "SELECT senha FROM cadastrousr WHERE nomeUsr = '{}' email ='{}'".format(nomeUsr, email)
+    qSql_senha = "SELECT senha FROM cadastrousr WHERE nomeUsr = '{}' OR email ='{}'".format(nomeUsr, email)
     # TERMINAR AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA PARTE DA SENHAA A A A A A A A AA A 
-    cursor3.execute(qSql_senha)
-    QtdSenha = cursor.fetchall
-    cursor3.close()
-    print(QtdSenha, "AJDIOASOADASJDIJADJOASJDASODAOJIOAJD")
-
-    if cursor.rowcount ==1 or cursor2.rowcount ==1:
-        
-        print("nome de usr ou email correspondentes")
-        funcao_principal()
+    cursor_senha.execute(qSql_senha)
+    QtdSenha = cursor_senha.fetchall()
+    print('TAMANHO: ', QtdSenha[0][0])
+   
+    if cursor_email.rowcount ==1 or cursor_nomeUsr.rowcount ==1: 
+        if senha != '' and QtdSenha[0][0] == senha:
+            funcao_principal() 
+        else:
+            loginScreen.label_4.setText("Senha Incorreta")
     else:
         loginScreen.label_4.setText("Email ou Nome de Usuário não encontrado")
     
-    # print(QtdNomeUsr[0][0], "XXXXXXXXXXXXXXXXXX")
-    # print(Qtdemail[0][0], " !AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    # print(email, " 000000000000000000000000")
-
-    # if email == str(Qtdemail[0][0]):
-    #     print("nome de usr ou email correspondentes")
-    #     funcao_principal()
-    # elif nomeUsr == str(QtdNomeUsr[0][0]):
-    #     print("nome de usr ou email correspondentes!!!!!!!!!!!!!!!")
-    #     funcao_principal()
-    # else:
-    #     print("emailsd nao verificcadaoasasas")
-
-    
-
-
 def callCadastrarScreen():
     cadastrarScreen.show()
 
@@ -189,7 +164,6 @@ def funcao_principal():
     # listData.close()
     formulario.show()
 
-    # le os inputs do arquivo formulario
     musicInput = str(formulario.lineEdit_5.text()).upper().replace(" ", "")
     singerInput = str((formulario.lineEdit.text()).upper()).replace(" ", "")
     composerInput = str((formulario.lineEdit_2.text()).upper()).replace(" ", "")
@@ -218,26 +192,23 @@ def funcao_principal():
     print("Duração " + timeInput)
     print("Gênero " + genero) 
 
-    
-# logica usada p teste do nome e email de cadastro
-    cursor = banco.cursor()
-    cursor2= banco.cursor()
+    cursor_musica = banco.cursor()
     consulta_sql_musica = ("SELECT nomeMusica from musicas WHERE nomeMusica = '{}'".format(musicInput))
-    cursor.execute(consulta_sql_musica)
-    qtdMusica = cursor.fetchall()
+    cursor_musica.execute(consulta_sql_musica)
+    qtdMusica = cursor_musica.fetchall()
 
+    cursor_AllMusica= banco.cursor()
     consulta_sql_linha = ("SELECT * from musicas;")
-    cursor2.execute(consulta_sql_linha)
-    qtdMusica = cursor2.fetchall()
+    cursor_AllMusica.execute(consulta_sql_linha)
+    qtdMusica = cursor_AllMusica.fetchall()
 
-
-    if cursor2.rowcount < 30:
-        if cursor.rowcount >= 1:
+    if cursor_AllMusica.rowcount < 30:
+        if cursor_musica.rowcount >= 1:
             formulario.label_8.setText("b")
         else:
             command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s)"
             data = (str(musicInput), str(singerInput), str(composerInput), str(yearInput), str(timeInput), genero) 
-            cursor.execute(command_SQL, data)
+            cursor_musica.execute(command_SQL, data)
             banco.commit()
             formulario.label_8.setText("Música adicionada com sucesso!")
     else:    
@@ -270,7 +241,6 @@ sucPDF = uic.loadUi("successMsg_PDF.ui")
 loginScreen = uic.loadUi("loginScreen.ui")
 cadastrarScreen = uic.loadUi("criarContaScreen.ui")
 sucMsgCadastrar = uic.loadUi("sucMsgCadastro.ui")
-
 
 formulario.pushButton.clicked.connect(funcao_principal)  #pushButton = botao Cadastrar. Ao ser acionado chamara a funcao principal
 formulario.pushButton_2.clicked.connect(callSecScreen)  
