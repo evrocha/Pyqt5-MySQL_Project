@@ -116,6 +116,7 @@ def cadastrar():
                 cursor3.execute(command_SQL, data)
                 banco.commit()
                 cadastrarScreen.label_8.setText("Conta cadastrada com sucesso!")
+                loginScreen.show()
             else:
                 print("As senhas não correspondem!")
     else:
@@ -142,7 +143,7 @@ def logar():
     cursor_nomeUsr.close()
 
     qSql_senha = "SELECT senha FROM cadastrousr WHERE nomeUsr = '{}' OR email ='{}'".format(nomeUsr, email)
-    # TERMINAR AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA PARTE DA SENHAA A A A A A A A AA A 
+   
     cursor_senha.execute(qSql_senha)
     QtdSenha = cursor_senha.fetchall()
     print('TAMANHO: ', QtdSenha[0][0])
@@ -215,7 +216,7 @@ def funcao_principal():
         formulario.label_8.setText("Quantidade máxima de músicas atingida!!!")
 
 
-def callSecScreen():
+def lista_playlist():
     # formulario.close()
     listData.show()
    
@@ -232,6 +233,13 @@ def callSecScreen():
         for j in range(0,6):
             listData.tableWidget.setItem(i,j,QtWidgets.QTableWidgetItem(str(dados_lidos[i][j])))
 
+    cursor_time = banco.cursor()
+    QTime_SQL = "SELECT SUM(duracao) FROM musicas;"
+    cursor_time.execute(QTime_SQL)
+    timeRes = cursor_time.fetchone;
+    
+    # print(timeRes([0]), "É O TEMPO DA PLAYLIST")
+
 app = QtWidgets.QApplication([]) # cria app
 
 formulario = uic.loadUi("formulario.ui") # obj q carrega o arquivo principal
@@ -243,7 +251,7 @@ cadastrarScreen = uic.loadUi("criarContaScreen.ui")
 sucMsgCadastrar = uic.loadUi("sucMsgCadastro.ui")
 
 formulario.pushButton.clicked.connect(funcao_principal)  #pushButton = botao Cadastrar. Ao ser acionado chamara a funcao principal
-formulario.pushButton_2.clicked.connect(callSecScreen)  
+formulario.pushButton_2.clicked.connect(lista_playlist)  
 erro01.pushButton.clicked.connect(funcao_principal)
 listData.pushButton.clicked.connect(gerarPDF)
 listData.pushButton_2.clicked.connect(excluirDados)
