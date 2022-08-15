@@ -205,9 +205,9 @@ def funcao_principal():
 
     if cursor_AllMusica.rowcount < 30:
         if cursor_musica.rowcount >= 1:
-            formulario.label_8.setText("b")
+            formulario.label_8.setText("")
         else:
-            command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s)"
+            command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s) "
             data = (str(musicInput), str(singerInput), str(composerInput), str(yearInput), str(timeInput), genero) 
             cursor_musica.execute(command_SQL, data)
             banco.commit()
