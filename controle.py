@@ -51,10 +51,13 @@ def cadastrar():
             cadastrarScreen.label_8.setText("Digite um e-mail válido")
         else:
             if senhaUsr==senha2Usr:
-                command_SQL = "INSERT INTO cadastrousr (nomeCompleto,nomeUsr,tel,email,senha) VALUES (%s,%s,%s,%s,%s)"
-                data = (str(nomeCompleto), str(nomeUsr), str(telUsr), str(emailUsr), str(senhaUsr))
-                cursor3.execute(command_SQL, data)
-                banco.commit()
+                try:
+                    command_SQL = "INSERT INTO cadastrousr (nomeCompleto,nomeUsr,tel,email,senha) VALUES (%s,%s,%s,%s,%s)"
+                    data = (str(nomeCompleto), str(nomeUsr), str(telUsr), str(emailUsr), str(senhaUsr))
+                    cursor3.execute(command_SQL, data)
+                    banco.commit()
+                except  mysql.connector.Error as err:
+                    print("Something went wrong: {}".format(err))
                 cadastrarScreen.label_8.setText("Conta cadastrada com sucesso!")
 
                 loginScreen.show()
@@ -106,13 +109,21 @@ def callCadastrarScreen():
 def funcao_principal():
     formulario.show()
 
+    musicInput = ""
+    singerInput = ""
+    composerInput = ""
+    yearInput = ""
+    timeInput =""
+    genero = ""
+#   
+
     musicInput = str(formulario.lineEdit_5.text()).upper().replace(" ", "")
     singerInput = str((formulario.lineEdit.text()).upper()).replace(" ", "")
     composerInput = str((formulario.lineEdit_2.text()).upper()).replace(" ", "")
     yearInput = formulario.lineEdit_3.text()
     timeInput = formulario.lineEdit_4.text()
     
-    genero = ""
+    
 
     if formulario.radioButton.isChecked():
         genero = "Rap/Trap"
@@ -146,13 +157,17 @@ def funcao_principal():
 
     if cursor_AllMusica.rowcount < 30:
         if cursor_musica.rowcount >= 1:
-            formulario.label_8.setText("")
+            formulario.label_8.setText("Música já adicionada")
         else:
-            command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s)"
-            data = (str(musicInput), str(singerInput), str(composerInput), str(yearInput), str(timeInput), genero) 
-            cursor_musica.execute(command_SQL, data)
-            banco.commit()
-            formulario.label_8.setText("Música adicionada com sucesso!")
+            if musicInput != '' and singerInput != '' and composerInput != '' and yearInput != '' and timeInput!= '' and genero!="":
+                try: 
+                    command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (str(musicInput), str(singerInput), str(composerInput), str(yearInput), str(timeInput), genero) 
+                    cursor_musica.execute(command_SQL, data)
+                    banco.commit()
+                    formulario.label_8.setText("Música adicionada com sucesso!")
+                except:
+                    print('tente adicionar a música novamente')
     else:    
         formulario.label_8.setText("Quantidade máxima de músicas atingida!!!")
 
