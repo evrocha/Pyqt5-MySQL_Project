@@ -91,6 +91,7 @@ def logar():
    
     if cursor_email.rowcount ==1 or cursor_nomeUsr.rowcount ==1: 
         if senha != '' and QtdSenha[0][0] == senha:
+            # loginScreen.returnPressed.connect(funcao_principal())
             funcao_principal() 
             loginScreen.close()
         else:
