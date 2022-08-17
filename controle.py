@@ -12,65 +12,15 @@ import mysql.connector
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A1, A4, A3, A2
  # variavel q recebe a conexao do código com o banco de dados MySQL
+try:
+    banco = mysql.connector.connect(
+        host='localhost',
+        database='cadastro_produtos',
+        user='root',
+        passwd='')
+except mysql.connector.Error as err:
+    print("Something went wrong: {}".format(err))
 
-banco = mysql.connector.connect(
-    host='localhost',
-    database='cadastro_produtos',
-    user='root',
-    passwd='')
-
-def excluirDados():
-    
-    linha = listData.tableWidget.currentRow() # recebe a linha clicada
-    listData.tableWidget.removeRow(linha)
-
-    cursor = banco.cursor()
-
-    cursor.execute("SELECT id FROM musicas")
-    data = cursor.fetchall()
-    valorId = data[linha][0]
-    cursor.execute("DELETE FROM musicas WHERE id = "+ str(valorId))
-    banco.commit()
-    
-def gerarPDF():
-    sucPDF.show()
-   
-    cursor = banco.cursor()
-
-    comando_SQL = "SELECT nomeMusica,cantor,compositor,ano,duracao,GENERO from musicas;"
-    cursor.execute(comando_SQL)
-    dados_lidos = cursor.fetchall()
-        
-    y=0
-
-    pdf = canvas.Canvas("Playlist_Música.pdf", pagesize= A2)
-    pdf.setFont("Times-Bold", 25)
-    pdf.drawString(450,1600, "Músicas cadastradas: ") 
-    pdf.setFont("Times-Bold", 18)
-    
-
-    pdf.drawString(10, 1550, "Música")
-    pdf.drawString(90, 1550, "Cantor")
-    pdf.drawString(310, 1550, "Compositor")
-    pdf.drawString(510, 1550, "Ano")
-    pdf.drawString(710, 1550, "Duração")
-    pdf.drawString(910, 1550, "Gênero")
-   
-
-    for i in range(0, len(dados_lidos)):
-        y = y +50
-        pdf.drawString(10, 1530 -y, str(dados_lidos[i][0]))
-        pdf.drawString(230, 1530 -y, str(dados_lidos[i][1]))
-        pdf.drawString(410, 1530 -y, str(dados_lidos[i][2]))
-        pdf.drawString(610, 1530 -y, str(dados_lidos[i][3]))
-        pdf.drawString(910, 1530 -y, str(dados_lidos[i][4]))
-        pdf.drawString(1010, 1530 -y, str(dados_lidos[i][5]))
-    pdf.save()
-   
-def closeSucPDF():
-    sucPDF.close()
-    formulario.close()
-    # callSecScreen.close()
 
 def sucCadastrar():
     sucMsgCadastrar.show()
@@ -233,12 +183,70 @@ def lista_playlist():
         for j in range(0,6):
             listData.tableWidget.setItem(i,j,QtWidgets.QTableWidgetItem(str(dados_lidos[i][j])))
 
-    cursor_time = banco.cursor()
-    QTime_SQL = "SELECT SUM(duracao) FROM musicas;"
-    cursor_time.execute(QTime_SQL)
-    timeRes = cursor_time.fetchone;
+    # cursor_time = banco.cursor()
+    # QTime_SQL = "SELECT SUM(duracao) FROM musicas;"
+    # cursor_time.execute(QTime_SQL)
+    # timeRes = cursor_time.fetchone;
     
     # print(timeRes([0]), "É O TEMPO DA PLAYLIST")
+def excluirDados():
+    
+    linha = listData.tableWidget.currentRow() # recebe a linha clicada
+    listData.tableWidget.removeRow(linha)
+
+    cursor_excluir = banco.cursor()
+# ta excluindo somente um por vez
+    cursor_excluir.execute("SELECT id FROM musicas")
+    data = cursor_excluir.fetchall()
+    valorId = data[linha][0]
+    cursor_excluir.execute("DELETE FROM musicas WHERE id = "+ str(valorId))
+    banco.commit()
+    
+    
+def gerarPDF():
+    sucPDF.show()
+   
+    cursor_PDF = banco.cursor()
+
+    comando_SQL = "SELECT nomeMusica,cantor,compositor,ano,duracao,GENERO from musicas;"
+    cursor_PDF.execute(comando_SQL)
+    dados_lidos = cursor_PDF.fetchall()
+        
+    y=0
+
+    pdf = canvas.Canvas("Playlist_Música.pdf", pagesize= A2)
+    pdf.setFont("Times-Bold", 25)
+    pdf.drawString(450,1600, "Músicas cadastradas: ") 
+    pdf.setFont("Times-Bold", 18)
+    
+
+    pdf.drawString(10, 1550, "Música")
+    pdf.drawString(90, 1550, "Cantor")
+    pdf.drawString(310, 1550, "Compositor")
+    pdf.drawString(510, 1550, "Ano")
+    pdf.drawString(710, 1550, "Duração")
+    pdf.drawString(910, 1550, "Gênero")
+   
+
+    for i in range(0, len(dados_lidos)):
+        y = y +50
+        pdf.drawString(10, 1530 -y, str(dados_lidos[i][0]))
+        pdf.drawString(230, 1530 -y, str(dados_lidos[i][1]))
+        pdf.drawString(410, 1530 -y, str(dados_lidos[i][2]))
+        pdf.drawString(610, 1530 -y, str(dados_lidos[i][3]))
+        pdf.drawString(910, 1530 -y, str(dados_lidos[i][4]))
+        pdf.drawString(1010, 1530 -y, str(dados_lidos[i][5]))
+    pdf.save()
+   
+def closeSucPDF():
+    sucPDF.close()
+    formulario.close()
+    # callSecScreen.close()
+
+
+
+
+
 
 app = QtWidgets.QApplication([]) # cria app
 
