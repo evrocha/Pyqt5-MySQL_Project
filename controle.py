@@ -1,12 +1,3 @@
-# quando nao cadastra o botao de voltar nao funciona
-#sistema de favorito com order by fav
-# ordenar o pdf pelo cantor  -- order by singer, nomemusica
-# fazer um sistema de search usando o like p buscar musicas do banco de dados
-#USAR O SUM P DAR O TEMPO TOTAL DA PLAYLIST
-
-# tive que alterar o tipo de duracao para VARCHAR pq quando, da tela de login (inicial), chamava a funcao_principal pelo botao, dava o erro "data truncated for column "duracao" at row 1
-    # com o varchar  dá certo, mas nao vou mais conseguir usar a funcao SQL SUM p retornar o tempo total da playlist
-
 from PyQt5 import uic, QtWidgets
 import mysql.connector
 from reportlab.pdfgen import canvas
@@ -20,7 +11,6 @@ try:
         passwd='')
 except mysql.connector.Error as err:
     print("Something went wrong: {}".format(err))
-
 
 def sucCadastrar():
     sucMsgCadastrar.show()
@@ -66,7 +56,9 @@ def cadastrar():
                 cursor3.execute(command_SQL, data)
                 banco.commit()
                 cadastrarScreen.label_8.setText("Conta cadastrada com sucesso!")
+
                 loginScreen.show()
+                cadastrarScreen.close()
             else:
                 print("As senhas não correspondem!")
     else:
@@ -96,23 +88,21 @@ def logar():
    
     cursor_senha.execute(qSql_senha)
     QtdSenha = cursor_senha.fetchall()
-    print('TAMANHO: ', QtdSenha[0][0])
    
     if cursor_email.rowcount ==1 or cursor_nomeUsr.rowcount ==1: 
         if senha != '' and QtdSenha[0][0] == senha:
             funcao_principal() 
+            loginScreen.close()
         else:
             loginScreen.label_4.setText("Senha Incorreta")
     else:
         loginScreen.label_4.setText("Email ou Nome de Usuário não encontrado")
     
 def callCadastrarScreen():
+    loginScreen.close()
     cadastrarScreen.show()
 
 def funcao_principal():
-    # o problema do tool button esta aqui
-    # tem q fazer algum laço p ele abrir sempre q for chamado
-    # listData.close()
     formulario.show()
 
     musicInput = str(formulario.lineEdit_5.text()).upper().replace(" ", "")
@@ -157,7 +147,7 @@ def funcao_principal():
         if cursor_musica.rowcount >= 1:
             formulario.label_8.setText("")
         else:
-            command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s) "
+            command_SQL = "INSERT INTO musicas (nomeMusica,cantor,compositor,ano,duracao, GENERO) VALUES (%s,%s,%s,%s,%s,%s)"
             data = (str(musicInput), str(singerInput), str(composerInput), str(yearInput), str(timeInput), genero) 
             cursor_musica.execute(command_SQL, data)
             banco.commit()
@@ -165,14 +155,12 @@ def funcao_principal():
     else:    
         formulario.label_8.setText("Quantidade máxima de músicas atingida!!!")
 
-
 def lista_playlist():
-    # formulario.close()
+    formulario.close()
     listData.show()
-   
-   # coletando info do banco
+
     cursor = banco.cursor()
-    comando_SQL = "SELECT nomeMusica,cantor,compositor,ano,duracao,GENERO from musicas;"
+    comando_SQL = "SELECT nomeMusica,cantor,compositor,ano,duracao,GENERO from musicas WHERE nomemusica NOT LIKE '';"
     cursor.execute(comando_SQL)
     dados_lidos = cursor.fetchall()
    
@@ -183,31 +171,21 @@ def lista_playlist():
         for j in range(0,6):
             listData.tableWidget.setItem(i,j,QtWidgets.QTableWidgetItem(str(dados_lidos[i][j])))
 
-    # cursor_time = banco.cursor()
-    # QTime_SQL = "SELECT SUM(duracao) FROM musicas;"
-    # cursor_time.execute(QTime_SQL)
-    # timeRes = cursor_time.fetchone;
-    
-    # print(timeRes([0]), "É O TEMPO DA PLAYLIST")
+   
 def excluirDados():
-    
     linha = listData.tableWidget.currentRow() # recebe a linha clicada
     listData.tableWidget.removeRow(linha)
 
     cursor_excluir = banco.cursor()
-# ta excluindo somente um por vez
     cursor_excluir.execute("SELECT id FROM musicas")
     data = cursor_excluir.fetchall()
     valorId = data[linha][0]
     cursor_excluir.execute("DELETE FROM musicas WHERE id = "+ str(valorId))
     banco.commit()
-    
-    
+
 def gerarPDF():
     sucPDF.show()
-   
     cursor_PDF = banco.cursor()
-
     comando_SQL = "SELECT nomeMusica,cantor,compositor,ano,duracao,GENERO from musicas;"
     cursor_PDF.execute(comando_SQL)
     dados_lidos = cursor_PDF.fetchall()
@@ -241,34 +219,29 @@ def gerarPDF():
 def closeSucPDF():
     sucPDF.close()
     formulario.close()
-    # callSecScreen.close()
+   
 
-
-
-
-
-
-app = QtWidgets.QApplication([]) # cria app
-
-formulario = uic.loadUi("formulario.ui") # obj q carrega o arquivo principal
-erro01 = uic.loadUi("erro_MusicaJaInserida.ui") # obj q carrega a tela do erro da musica ja add
+app = QtWidgets.QApplication([]) 
+#
+formulario = uic.loadUi("formulario.ui") 
+erro01 = uic.loadUi("erro_MusicaJaInserida.ui") 
 listData = uic.loadUi("listar_dados.ui")
 sucPDF = uic.loadUi("successMsg_PDF.ui")
 loginScreen = uic.loadUi("loginScreen.ui")
 cadastrarScreen = uic.loadUi("criarContaScreen.ui")
 sucMsgCadastrar = uic.loadUi("sucMsgCadastro.ui")
-
-formulario.pushButton.clicked.connect(funcao_principal)  #pushButton = botao Cadastrar. Ao ser acionado chamara a funcao principal
+#
+formulario.pushButton.clicked.connect(funcao_principal) 
 formulario.pushButton_2.clicked.connect(lista_playlist)  
 erro01.pushButton.clicked.connect(funcao_principal)
 listData.pushButton.clicked.connect(gerarPDF)
 listData.pushButton_2.clicked.connect(excluirDados)
 sucPDF.pushButton.clicked.connect(closeSucPDF)
-listData.toolButton.clicked.connect(funcao_principal) # retorno da lista p inicial
-loginScreen.pushButton.clicked.connect(logar) ########
+listData.toolButton.clicked.connect(funcao_principal)
+loginScreen.pushButton.clicked.connect(logar) 
 loginScreen.pushButton_2.clicked.connect(callCadastrarScreen)
 cadastrarScreen.pushButton.clicked.connect(cadastrar)
 sucMsgCadastrar.pushButton.clicked.connect(funcao_principal)
-loginScreen.show() # o certo é abrir na tela de login, sempre
+loginScreen.show() 
 
 app.exec()
